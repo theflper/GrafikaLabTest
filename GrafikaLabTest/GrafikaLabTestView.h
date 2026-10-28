@@ -10,6 +10,7 @@ class CGrafikaLabTestView : public CView
 protected: // create from serialization only
 	CGrafikaLabTestView() noexcept;
 	bool m_showGrid = true;
+	const float PI = 3.14159265f;
 	DECLARE_DYNCREATE(CGrafikaLabTestView)
 
 // Attributes

@@ -1,9 +1,10 @@
 
 // GrafikaLabTestView.cpp : implementation of the CGrafikaLabTestView class
-//
-
+//include "pch.h" uvek prva linija inace puca kod
 #include "pch.h"
 #include "framework.h"
+#include <vector>
+using namespace std;
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
 #ifndef SHARED_HANDLERS
@@ -62,7 +63,52 @@ void CGrafikaLabTestView::OnDraw(CDC* pDC)
 		return;
 	//siva pozadina za 500*500 piksela
 	pDC->FillSolidRect(0, 0, 500, 500, RGB(210, 210, 210));
-	// TODO: add draw code for native data here
+	/*Primer crtanja jednog objekta
+	1. Kreiramo roze olovku sa okruglim spojevima
+	CPen pinkPen;
+	pinkPen.CreatePen(PS_GEOMETRIC | PS_SOLID | PS_JOIN_ROUND, 2, RGB(255, 0, 255));
+
+	2. Kreiramo obiènu èetku (ili stavimo NULL_BRUSH ako je providno)
+	CBrush brush(RGB(255, 192, 203)); // Primer: svetlo roze ispun
+	Postavljanje providne (šuplje) èetke jer je ona defaultno ugraðena
+	CBrush* pOldBrush = (CBrush*)pDC->SelectStockObject(NULL_BRUSH);
+
+	3. Selektujemo ih u pDC i hvatamo stare objekte
+	CPen* pOldPen = pDC->SelectObject(&pinkPen);
+	CBrush* pOldBrush = pDC->SelectObject(&brush);
+
+	4. Pozivamo našu funkciju za crtanje (npr. pravougaonik ili poligon)
+	DrawRegularPolygon(pDC, cx, cy, r, n, rotAngle);
+
+	5. Vraæamo stare objekte na stek (obavezno!)
+	pDC->SelectObject(pOldPen);
+	pDC->SelectObject(pOldBrush);
+	*/
+	CPen pinkPen;
+	// PS_GEOMETRIC | PS_SOLID znaèi geometrijska puna linija
+	// PS_JOIN_ROUND definiše zaobljene spojeve izmeðu linija
+	pinkPen.CreatePen(PS_GEOMETRIC | PS_SOLID | PS_JOIN_ROUND, 4, RGB(255, 0, 255));
+	//ljubièasta èetka
+	CBrush purpleBrush(RGB(130, 0, 160));
+	//sad selektovanje i pamæenje starih vrednosti
+	CPen* pOldPen = pDC->SelectObject(&pinkPen);
+	CBrush* pOldBrush = pDC->SelectObject(&purpleBrush);
+	//ono što crtamo
+	std::vector<CPoint> points = { CPoint(100, 175) , CPoint(100, 100), CPoint(175, 175),CPoint(175, 250) };
+	DrawPolygon(pDC, points.data(), points.size());
+	//crtaj
+	//vrati stare vredonsti
+	//olovka je ista svuda pa ne mora još
+	//pDC->SelectObject(pOldPen);
+	pDC->SelectObject(pOldBrush);
+	//sledeci je roze trougao
+	CBrush lightPinkBrush(RGB(255, 182, 203));
+	pOldBrush = pDC->SelectObject(&lightPinkBrush);
+	points = { CPoint(175, 175) , CPoint(175, 325), CPoint(325, 325) };
+	DrawPolygon(pDC, points.data(), points.size());
+	pDC->SelectObject(pOldBrush);
+	pDC->SelectObject(pOldPen);
+	//grid se crta na kraju posle ostatka jer ide preko slike
 	if (m_showGrid)
 	{
 		// Petlje koje crtaju linije mreže na svakih 50 piksela do 500x500
@@ -70,12 +116,12 @@ void CGrafikaLabTestView::OnDraw(CDC* pDC)
 		CPen gridPen(PS_SOLID, 1, RGB(255, 255, 255));
 		//pravilo uvke selektuj prethodnu olovku
 		CPen* pOldPen = pDC->SelectObject(&gridPen);
-		for (int x = 0; x <= 500; x += 50)
+		for (int x = 0; x <= 500; x += 25)
 		{
 			pDC->MoveTo(x, 0);
 			pDC->LineTo(x, 500);
 		}
-		for (int y = 0; y <= 500; y += 50)
+		for (int y = 0; y <= 500; y += 25)
 		{
 			pDC->MoveTo(0, y);
 			pDC->LineTo(500, y);
@@ -157,7 +203,7 @@ void CGrafikaLabTestView::DrawRegularPolygon(CDC* pDC, int cx, int cy, int r, in
 	if (n < 3) return;
 	// Alociramo niz taèaka na steku ili dinamièki
 	CPoint* points = new CPoint[n];
-	float angleStep = 2.0f * (float)M_PI / n;
+	float angleStep = 2.0f * PI/ n;
 	for (int i = 0; i < n; ++i)
 	{
 		float alfa = rotAngle + i * angleStep;
