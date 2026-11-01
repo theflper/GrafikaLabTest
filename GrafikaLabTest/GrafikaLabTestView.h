@@ -18,6 +18,7 @@ public:
 	CGrafikaLabTestDoc* GetDocument() const;
 	void DrawRegularPolygon(CDC* pDC, int cx, int cy, int r, int n, float rotAngle);
 	void DrawPolygon(CDC* pDC, CPoint* points, int n);
+	void DrawRegularPolygon1(CDC* pDC, int cx, int cy, int r, int n, float rotAngle);
 	//CDC ima podatke za olovku,cetku,font i boju koji su CPen, CBrush, CFont i COLORREF. 
 	//CDC je klasa koja se koristi za crtanje u MFC aplikacijama. 
 	// Ona predstavlja kontekst ureðaja (device context) koji omoguæava crtanje na ekranu ili u datoteci. 

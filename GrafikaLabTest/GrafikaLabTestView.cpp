@@ -158,6 +158,13 @@ void CGrafikaLabTestView::OnDraw(CDC* pDC)
 	DrawRegularPolygon(pDC,355,295,23,6,0);
 	DrawRegularPolygon(pDC,345,377,13,7,64.286f);
 	DrawRegularPolygon(pDC,420,197,13,8,67.5f);
+	/*
+	DrawRegularPolygon1(pDC,100,220,20,4,45);
+	DrawRegularPolygon1(pDC,218,280,23,5,54);
+	DrawRegularPolygon1(pDC,355,295,23,6,0);
+	DrawRegularPolygon1(pDC,345,377,13,7,64.286f);
+	DrawRegularPolygon1(pDC,420,197,13,8,67.5f);
+	*/
 	pDC->SelectObject(pOldBrush);
 	pDC->SelectObject(pOldPen);
 	pDC->SetBkColor(oldBkColor);
@@ -301,4 +308,46 @@ void CGrafikaLabTestView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	}
 
 	CView::OnKeyDown(nChar, nRepCnt, nFlags);
+}
+void CGrafikaLabTestView::DrawRegularPolygon1(CDC* pDC, int cx, int cy, int r, int n, float rotAngle)
+{
+	if (n < 3) return;
+	//Uključiti napredni grafički režim da bi transformacije radile
+	int oldGraphicsMode = pDC->SetGraphicsMode(GM_ADVANCED);
+	//Čuvamo trenutni World Transform da bismo mogli da ga vratimo posle
+	XFORM oldXform;
+	pDC->GetWorldTransform(&oldXform);
+	//Pretvaramo željeni ugao rotacije iz stepena u radijane
+	float rad = rotAngle * (PI / 180.0f);
+	float cosA = cos(rad);
+	float sinA = sin(rad);
+	// Kreiramo matricu transformacije (Rotacija oko tačke (cx, cy))
+	// Formula za rotaciju oko proizvoljne tačke (cx, cy):
+	XFORM xform;
+	xform.eM11 = cosA;
+	xform.eM12 = sinA;
+	xform.eM21 = -sinA;
+	xform.eM22 = cosA;
+	xform.eDx = (float)cx - cx * cosA + cy * sinA;//radimo translaciju i rotaciju u istoj matrici
+	xform.eDy = (float)cy - cx * sinA - cy * cosA;//tačke će biti pomerene u odnosu na centar (cx, cy) i rotirane za ugao rotAngle
+	//Primenjujemo transformaciju na kontekst uređaja (CDC)
+	pDC->ModifyWorldTransform(&xform, MWT_LEFTMULTIPLY);
+	// Generišemo tačke za STANDARDAN (nerotiran) poligon u odnosu na isti centar (cx, cy)
+	// isto kao u DrawRegularPolygon, ali bez rotacije u formuli za alfa
+	CPoint* points = new CPoint[n];
+	float angleStep = 2.0f * PI / n;
+	float baseOffset = (-PI / 2.0f) - (PI / n);
+	for (int i = 0; i < n; ++i)
+	{
+		float alfa = baseOffset + (i * angleStep); // Nema rotacije ovde, rotira matrica!
+		int x = cx + (int)round(r * cos(alfa));
+		int y = cy + (int)round(r * sin(alfa));
+		points[i] = CPoint(x, y);
+	}
+	// Crtamo poligon (Windows će automatski transformisati/zarotirati svaku tačku preko matrice!)
+	pDC->Polygon(points, n);
+	delete[] points;
+	// Vraćamo stare postavke transformacije i grafički režim
+	pDC->SetWorldTransform(&oldXform);
+	pDC->SetGraphicsMode(oldGraphicsMode);
 }
